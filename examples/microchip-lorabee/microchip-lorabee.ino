@@ -56,6 +56,7 @@ uint8_t testPayload[] =
 
 void setup()
 {
+	digitalWrite(20, HIGH); //Enable the lorawan module. 
 	debugSerial.begin(57600);
 	loraSerial.begin(LoRaBee.getDefaultBaudRate());
 
