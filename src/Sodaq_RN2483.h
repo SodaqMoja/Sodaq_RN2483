@@ -92,7 +92,7 @@ public:
     void setDiag(Stream& stream) { diagStream = &stream; };
     
     // Send chip to sleep for n msec
-    void sleep(uint16_t msec);
+    void sleep(uint32_t msec);
 
     // Sends the given payload without acknowledgement.
     // Returns 0 (NoError) when transmission is successful or one of the MacTransmitErrorCodes otherwise.

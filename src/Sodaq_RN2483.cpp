@@ -412,7 +412,7 @@ uint8_t Sodaq_RN2483::onMacRX()
 }
 // Set the RN2483 to sleep for n msec
 //
-void Sodaq_RN2483::sleep(uint16_t msec) {
+void Sodaq_RN2483::sleep(uint32_t msec) {
     debugPrintLn("[sleep] ");
     this->loraStream->print("sys sleep ");
     this->loraStream->print(msec);
