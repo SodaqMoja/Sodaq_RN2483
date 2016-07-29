@@ -26,12 +26,12 @@
 //#define DEBUG
 
 #ifdef DEBUG
-#define debugprintLn(...) { if (this->diagStream) this->diagStream->println(__VA_ARGS__); }
-#define debugprint(...) { if (this->diagStream) this->diagStream->print(__VA_ARGS__); }
+#define debugPrintLn(...) { if (this->diagStream) this->diagStream->println(__VA_ARGS__); }
+#define debugPrint(...) { if (this->diagStream) this->diagStream->print(__VA_ARGS__); }
 #warning "Debug mode is ON"
 #else
-#define debugprintLn(...)
-#define debugprint(...)
+#define debugPrintLn(...)
+#define debugPrint(...)
 #endif
 
 // Structure for mapping error response strings and error codes.
@@ -59,7 +59,7 @@ Sodaq_RN2483::Sodaq_RN2483() :
 // Takes care of the init tasks common to both initOTA() and initABP.
 void Sodaq_RN2483::init(SerialType& stream)
 {
-    debugprintLn("[init]");
+    debugPrintLn("[init]");
 
     this->loraStream = &stream;
 
@@ -83,7 +83,7 @@ void Sodaq_RN2483::init(SerialType& stream)
 // Returns true on successful connection.
 bool Sodaq_RN2483::initOTA(SerialType& stream, const uint8_t devEUI[8], const uint8_t appEUI[8], const uint8_t appKey[16], bool adr)
 {
-    debugprintLn("[initOTA]");
+    debugPrintLn("[initOTA]");
 
     init(stream);
 
@@ -99,7 +99,7 @@ bool Sodaq_RN2483::initOTA(SerialType& stream, const uint8_t devEUI[8], const ui
 // Returns true on successful connection.
 bool Sodaq_RN2483::initABP(SerialType& stream, const uint8_t devAddr[4], const uint8_t appSKey[16], const uint8_t nwkSKey[16], bool adr)
 {
-    debugprintLn("[initABP]");
+    debugPrintLn("[initABP]");
 
     init(stream);
 
@@ -115,7 +115,7 @@ bool Sodaq_RN2483::initABP(SerialType& stream, const uint8_t devAddr[4], const u
 // Returns 0 (NoError) when transmission is successful or one of the MacTransmitErrorCodes otherwise.
 uint8_t Sodaq_RN2483::send(uint8_t port, const uint8_t* payload, uint8_t size)
 {
-    debugprintLn("[send]");
+    debugPrintLn("[send]");
 
     return macTransmit(STR_UNCONFIRMED, port, payload, size);
 }
@@ -125,11 +125,11 @@ uint8_t Sodaq_RN2483::send(uint8_t port, const uint8_t* payload, uint8_t size)
 uint8_t Sodaq_RN2483::sendReqAck(uint8_t port, const uint8_t* payload,
         uint8_t size, uint8_t maxRetries)
 {
-    debugprintLn("[sendReqAck]");
+    debugPrintLn("[sendReqAck]");
 
     if (!setMacParam(STR_RETRIES, maxRetries)) {
         // not a fatal error -just show a debug message
-        debugprintLn("[sendReqAck] Non-fatal error: setting number of retries failed.");
+        debugPrintLn("[sendReqAck] Non-fatal error: setting number of retries failed.");
     }
 
     return macTransmit(STR_CONFIRMED, port, payload, size);
@@ -141,10 +141,10 @@ uint8_t Sodaq_RN2483::sendReqAck(uint8_t port, const uint8_t* payload,
 uint16_t Sodaq_RN2483::receive(uint8_t* buffer, uint16_t size,
         uint16_t payloadStartPosition)
 {
-    debugprintLn("[receive]");
+    debugPrintLn("[receive]");
 
     if (!this->packetReceived) {
-        debugprintLn("[receive]: There is no packet received!");
+        debugPrintLn("[receive]: There is no packet received!");
         return 0;
     }
 
@@ -153,7 +153,7 @@ uint16_t Sodaq_RN2483::receive(uint8_t* buffer, uint16_t size,
 
     // check that the asked starting position is within bounds
     if (inputIndex >= this->receivedPayloadBufferSize) {
-        debugprintLn("[receive]: Out of bounds start position!");
+        debugPrintLn("[receive]: Out of bounds start position!");
         return 0;
     }
 
@@ -174,7 +174,7 @@ uint16_t Sodaq_RN2483::receive(uint8_t* buffer, uint16_t size,
 
     buffer[outputIndex] = 0; // terminate the string
 
-    debugprintLn("[receive]: Done");
+    debugPrintLn("[receive]: Done");
     return outputIndex;
 }
 
@@ -182,7 +182,7 @@ uint16_t Sodaq_RN2483::receive(uint8_t* buffer, uint16_t size,
 // Returns the number of bytes written or 0 in case of error.
 uint8_t Sodaq_RN2483::getHWEUI(uint8_t* buffer, uint8_t size)
 {
-    debugprintLn("[getHWEUI]");
+    debugPrintLn("[getHWEUI]");
 
     this->loraStream->print(STR_CMD_GET_HWEUI);
     this->loraStream->print(CRLF);
@@ -194,10 +194,10 @@ uint8_t Sodaq_RN2483::getHWEUI(uint8_t* buffer, uint8_t size)
     unsigned long start = millis();
     while (millis() < start + DEFAULT_TIMEOUT) {
         sodaq_wdt_reset();
-        debugprint(".");
+        debugPrint(".");
 
         if (readLn() > 0) {
-            debugprintLn(this->inputBuffer);
+            debugPrintLn(this->inputBuffer);
             while (outputIndex < size
                 && inputIndex + 1 < this->inputBufferSize
                 && this->inputBuffer[inputIndex] != 0
@@ -209,12 +209,12 @@ uint8_t Sodaq_RN2483::getHWEUI(uint8_t* buffer, uint8_t size)
                 outputIndex++;
             }
 
-            debugprint("[getHWEUI] count: "); debugprintLn(outputIndex);
+            debugPrint("[getHWEUI] count: "); debugPrintLn(outputIndex);
             return outputIndex;
         }
     }
 
-    debugprint("[getHWEUI] Timed out without a response!");
+    debugPrint("[getHWEUI] Timed out without a response!");
     return 0;
 }
 
@@ -224,17 +224,17 @@ uint8_t Sodaq_RN2483::getHWEUI(uint8_t* buffer, uint8_t size)
 uint8_t Sodaq_RN2483::pinMode(uint8_t gpio, pinModes mode) {
 	//sanitize inputs,
 	//GPIO4 does not do analog
-	debugprintLn("setting GPIO pin");
+	debugPrintLn("setting GPIO pin");
 	if (mode == analog) {
 		if (gpio==4) {
 			return false;
-			debugprintLn("GPIO4 does not support analog");
+			debugPrintLn("GPIO4 does not support analog");
 		}
 	}
 	// only handle GPIO0-13
 	if (gpio >13) {
 		return false;
-		debugprintLn("GPIO out of bounds : 0-13 only");
+		debugPrintLn("GPIO out of bounds : 0-13 only");
 	}
 	// sys set pinmode <pinname> <pinFunc>
 	this->loraStream->print(STR_SYS_SET);
@@ -261,10 +261,10 @@ uint8_t Sodaq_RN2483::pinMode(uint8_t gpio, pinModes mode) {
 uint8_t Sodaq_RN2483::digitalRead(uint8_t gpio) {
 	//sanitize inputs,
 	// only handle GPIO0-13
-	debugprintLn("digitalRead");
+	debugPrintLn("digitalRead");
 	if (gpio >13) {
 		return false;
-		debugprintLn("GPIO out of bounds : 0-13 only");
+		debugPrintLn("GPIO out of bounds : 0-13 only");
 	}
 	// sys get pindig <pinname>
 	this->loraStream->print(STR_SYS_GET);
@@ -285,10 +285,10 @@ uint8_t Sodaq_RN2483::digitalRead(uint8_t gpio) {
 uint8_t Sodaq_RN2483::digitalWrite(uint8_t gpio, uint8_t state) {
 	//sanitize inputs,
 	// only handle GPIO0-13
-	debugprintLn("digitalWrite");
+	debugPrintLn("digitalWrite");
 	if (gpio >13) {
 		return false;
-		debugprintLn("GPIO out of bounds : 0-13 only");
+		debugPrintLn("GPIO out of bounds : 0-13 only");
 	}
 	// sys set pindig <pinname> <pinstate>
 	// example: sys set pindig GPIO5 1
@@ -310,10 +310,10 @@ uint16_t Sodaq_RN2483::analogRead(uint8_t gpio) {
 	uint16_t analogReading = 0;
 	//sanitize inputs,
 	// only handle GPIO0-13, but not 4
-	debugprintLn("analogRead");
+	debugPrintLn("analogRead");
 	if (gpio >13 && gpio != 4) {
 		return 0;
-		debugprintLn("GPIO out of bounds : 0-13 only, and not 4");
+		debugPrintLn("GPIO out of bounds : 0-13 only, and not 4");
 	}
 	// sys get pinana <pinname>
 	// example : sys get pinana GPIO0
@@ -336,7 +336,7 @@ uint16_t Sodaq_RN2483::readVdd() {
 	uint16_t analogReading = 0;
 	//sanitize inputs,
 	// only handle GPIO0-13, but not 4
-	debugprintLn("readVdd");
+	debugPrintLn("readVdd");
 	// example : sys get vdd
 	this->loraStream->print(STR_SYS_GET);
 	this->loraStream->print(STR_SYS_VDD);
@@ -353,7 +353,7 @@ uint16_t Sodaq_RN2483::readVdd() {
 
 void Sodaq_RN2483::wakeUp()
 {
-    debugprintLn("[wakeUp]");
+    debugPrintLn("[wakeUp]");
 
     // "emulate" break condition
     this->loraStream->flush();
@@ -371,7 +371,7 @@ void Sodaq_RN2483::wakeUp()
 
 void Sodaq_RN2483::sleep()
 {
-    debugprintLn("[sleep]");
+    debugPrintLn("[sleep]");
 
     this->loraStream->print(STR_CMD_SLEEP);
     this->loraStream->print(CRLF);
@@ -395,18 +395,18 @@ uint16_t Sodaq_RN2483::readLn(char* buffer, uint16_t size, uint16_t start)
 // Returns false if a timeout occurs or if another string is received.
 bool Sodaq_RN2483::expectString(const char* str, uint16_t timeout)
 {
-    debugprint("[expectString] expecting "); debugprint(str);
+    debugPrint("[expectString] expecting "); debugPrint(str);
 
     unsigned long start = millis();
     while (millis() < start + timeout) {
         sodaq_wdt_reset();
-        debugprint(".");
+        debugPrint(".");
 
         if (readLn() > 0) {
-            debugprint("("); debugprint(this->inputBuffer); debugprint(")");
+            debugPrint("("); debugPrint(this->inputBuffer); debugPrint(")");
 
             if (strstr(this->inputBuffer, str) != NULL) {
-                debugprintLn(" found a match!");
+                debugPrintLn(" found a match!");
 
                 return true;
             }
@@ -427,26 +427,26 @@ bool Sodaq_RN2483::expectOK()
 // Returns true on success.
 bool Sodaq_RN2483::resetDevice()
 {
-    debugprintLn("[resetDevice]");
+    debugPrintLn("[resetDevice]");
 
     this->loraStream->print(STR_CMD_RESET);
     this->loraStream->print(CRLF);
 
     if (expectString(STR_DEVICE_TYPE_RN)) {
         if (strstr(this->inputBuffer, STR_DEVICE_TYPE_RN2483) != NULL) {
-            debugprintLn("The device type is RN2483");
+            debugPrintLn("The device type is RN2483");
 
             return true;
         }
         else if (strstr(this->inputBuffer, STR_DEVICE_TYPE_RN2903) != NULL) {
-            debugprintLn("The device type is RN2903");
+            debugPrintLn("The device type is RN2903");
             // TODO move into init once it is decided how to handle RN2903-specific operations
             setFsbChannels(DEFAULT_FSB);
 
             return true;
         }
         else {
-            debugprintLn("Unknown device type!");
+            debugPrintLn("Unknown device type!");
 
             return false;
         }
@@ -461,7 +461,7 @@ bool Sodaq_RN2483::resetDevice()
 // Returns true if all channels were set successfully.
 bool Sodaq_RN2483::setFsbChannels(uint8_t fsb)
 {
-    debugprintLn("[setFsbChannels]");
+    debugPrintLn("[setFsbChannels]");
 
     uint8_t first125kHzChannel = fsb > 0 ? (fsb - 1) * 8 : 0;
     uint8_t last125kHzChannel = fsb > 0 ? first125kHzChannel + 7 : 71;
@@ -485,7 +485,7 @@ bool Sodaq_RN2483::setFsbChannels(uint8_t fsb)
 // Returns true on success.
 bool Sodaq_RN2483::joinNetwork(const char* type)
 {
-    debugprintLn("[joinNetwork]");
+    debugPrintLn("[joinNetwork]");
 
     this->loraStream->print(STR_CMD_JOIN);
     this->loraStream->print(type);
@@ -500,7 +500,7 @@ bool Sodaq_RN2483::joinNetwork(const char* type)
 // NOTE: paramName should include a trailing space
 bool Sodaq_RN2483::setMacParam(const char* paramName, const uint8_t* paramValue, uint16_t size)
 {
-    debugprint("[setMacParam] "); debugprint(paramName); debugprint("= [array]");
+    debugPrint("[setMacParam] "); debugPrint(paramName); debugPrint("= [array]");
 
     this->loraStream->print(STR_CMD_SET);
     this->loraStream->print(paramName);
@@ -521,10 +521,10 @@ bool Sodaq_RN2483::setMacParam(const char* paramName, const uint8_t* paramValue,
 // NOTE: paramName should include a trailing space
 bool Sodaq_RN2483::setMacParam(const char* paramName, uint8_t paramValue)
 {
-    debugprint("[setMacParam] ");
-    debugprint(paramName);
-    debugprint("= ");
-    debugprintLn(paramValue);
+    debugPrint("[setMacParam] ");
+    debugPrint(paramName);
+    debugPrint("= ");
+    debugPrintLn(paramValue);
 
     this->loraStream->print(STR_CMD_SET);
     this->loraStream->print(paramName);
@@ -540,10 +540,10 @@ bool Sodaq_RN2483::setMacParam(const char* paramName, uint8_t paramValue)
 // NOTE: paramName should include a trailing space
 bool Sodaq_RN2483::setMacParam(const char* paramName, const char* paramValue)
 {
-    debugprint("[setMacParam] ");
-    debugprint(paramName);
-    debugprint("= ");
-    debugprintLn(paramValue);
+    debugPrint("[setMacParam] ");
+    debugPrint(paramName);
+    debugPrint("= ");
+    debugPrintLn(paramValue);
 
     this->loraStream->print(STR_CMD_SET);
     this->loraStream->print(paramName);
@@ -556,11 +556,11 @@ bool Sodaq_RN2483::setMacParam(const char* paramName, const char* paramValue)
 // Returns the enum that is mapped to the given "error" message.
 uint8_t Sodaq_RN2483::lookupMacTransmitError(const char* error)
 {
-    debugprint("[lookupMacTransmitError]: ");
-    debugprintLn(error);
+    debugPrint("[lookupMacTransmitError]: ");
+    debugPrintLn(error);
 
     if (error[0] == 0) {
-        debugprintLn("[lookupMacTransmitError]: The string is empty!");
+        debugPrintLn("[lookupMacTransmitError]: The string is empty!");
         return NoResponse;
     }
 
@@ -579,20 +579,20 @@ uint8_t Sodaq_RN2483::lookupMacTransmitError(const char* error)
 
     for (StringEnumPair_t * p = errorTable; p->stringValue != NULL; ++p) {
         if (strcmp(p->stringValue, error) == 0) {
-            debugprint("[lookupMacTransmitError]: found ");
-            debugprintLn(p->enumValue);
+            debugPrint("[lookupMacTransmitError]: found ");
+            debugPrintLn(p->enumValue);
 
             return p->enumValue;
         }
     }
 
-    debugprintLn("[lookupMacTransmitError]: not found!");
+    debugPrintLn("[lookupMacTransmitError]: not found!");
     return NoResponse;
 }
 
 uint8_t Sodaq_RN2483::macTransmit(const char* type, uint8_t port, const uint8_t* payload, uint8_t size)
 {
-    debugprintLn("[macTransmit]");
+    debugPrintLn("[macTransmit]");
 
     this->loraStream->print(STR_CMD_MAC_TX);
     this->loraStream->print(type);
@@ -612,32 +612,32 @@ uint8_t Sodaq_RN2483::macTransmit(const char* type, uint8_t port, const uint8_t*
 
     this->packetReceived = false; // prepare for receiving a new packet
 
-    debugprint("Waiting for server response");
+    debugPrint("Waiting for server response");
     unsigned long timeout = millis() + RECEIVE_TIMEOUT; // hard timeout
     while (millis() < timeout) {
         sodaq_wdt_reset();
-        debugprint(".");
+        debugPrint(".");
         if (readLn() > 0) {
-            debugprintLn(".");debugprint("(");debugprint(this->inputBuffer);debugprintLn(")");
+            debugPrintLn(".");debugPrint("(");debugPrint(this->inputBuffer);debugPrintLn(")");
 
             if (strstr(this->inputBuffer, " ") != NULL) // to avoid double delimiter search
             {
                 // there is a splittable line -only case known is mac_rx
-                debugprintLn("Splittable response found");
+                debugPrintLn("Splittable response found");
                 return onMacRX();
             } else if (strstr(this->inputBuffer, STR_RESULT_MAC_TX_OK)) {
                 // done
-                debugprintLn("Received mac_tx_ok");
+                debugPrintLn("Received mac_tx_ok");
                 return NoError;
             } else {
                 // lookup the error message
-                debugprintLn("Some other string received (error)");
+                debugPrintLn("Some other string received (error)");
                 return lookupMacTransmitError(this->inputBuffer);
             }
         }
     }
 
-    debugprintLn("Timed-out waiting for a response!");
+    debugPrintLn("Timed-out waiting for a response!");
     return Timeout;
 }
 
@@ -646,14 +646,14 @@ uint8_t Sodaq_RN2483::macTransmit(const char* type, uint8_t port, const uint8_t*
 // Returns 0 (NoError) or otherwise one of the MacTransmitErrorCodes.
 uint8_t Sodaq_RN2483::onMacRX()
 {
-    debugprintLn("[onMacRX]");
+    debugPrintLn("[onMacRX]");
 
     // parse inputbuffer, put payload into packet buffer
     char* token = strtok(this->inputBuffer, " ");
 
     // sanity check
     if (strcmp(token, STR_RESULT_MAC_RX) != 0) {
-        debugprintLn("[onMacRX]: mac_rx keyword not found!");
+        debugPrintLn("[onMacRX]: mac_rx keyword not found!");
         return InternalError;
     }
 
@@ -684,8 +684,8 @@ int freeRam()
 void Sodaq_RN2483::runTestSequence(SerialType& loraStream, Stream& debugStream)
 {
 #ifdef DEBUG
-    debugprint("free ram: ");
-    debugprintLn(freeRam());
+    debugPrint("free ram: ");
+    debugPrintLn(freeRam());
 
     init(loraStream);
 
@@ -693,103 +693,103 @@ void Sodaq_RN2483::runTestSequence(SerialType& loraStream, Stream& debugStream)
     this->diagStream = &debugStream;
 
     // expectString
-    debugprintLn("write \"testString\" and then CRLF");
+    debugPrintLn("write \"testString\" and then CRLF");
     if (expectString("testString", 5000)) {
-        debugprintLn("[expectString] positive case works!");
+        debugPrintLn("[expectString] positive case works!");
     }
 
-    debugprintLn("");
-    debugprintLn("write something other than \"testString\" and then CRLF");
+    debugPrintLn("");
+    debugPrintLn("write something other than \"testString\" and then CRLF");
     if (!expectString("testString", 5000)) {
-        debugprintLn("[expectString] negative case works!");
+        debugPrintLn("[expectString] negative case works!");
     }
 
-    debugprint("free ram: ");
-    debugprintLn(freeRam());
+    debugPrint("free ram: ");
+    debugPrintLn(freeRam());
 
     // setMacParam(array)
-    debugprintLn("");
-    debugprintLn("");
+    debugPrintLn("");
+    debugPrintLn("");
     uint8_t testValue[] = {0x01, 0x02, 0xDE, 0xAD, 0xBE, 0xEF};
     setMacParam("testParam ", testValue, ARRAY_SIZE(testValue));
 
     // macTransmit
-    debugprintLn("");
-    debugprintLn("");
+    debugPrintLn("");
+    debugPrintLn("");
     uint8_t testValue2[] = {0x01, 0x02, 0xDE, 0xAD, 0xBE, 0xEF};
     macTransmit(STR_CONFIRMED, 1, testValue2, ARRAY_SIZE(testValue2));
 
-    debugprint("free ram: ");
-    debugprintLn(freeRam());
+    debugPrint("free ram: ");
+    debugPrintLn(freeRam());
 
     // receive
-    debugprintLn("");
-    debugprintLn("==== receive");
+    debugPrintLn("");
+    debugPrintLn("==== receive");
     char mockResult[] = "303132333435363738";
     memcpy(this->receivedPayloadBuffer, mockResult, strlen(mockResult) + 1);
     uint8_t payload[64];
-    debugprintLn("* without having received packet");
+    debugPrintLn("* without having received packet");
     uint8_t length = receive(payload, sizeof(payload));
-    debugprintLn(reinterpret_cast<char*>(payload));
-    debugprint("Length: ");
-    debugprintLn(length);
-    debugprintLn("* having received packet");
+    debugPrintLn(reinterpret_cast<char*>(payload));
+    debugPrint("Length: ");
+    debugPrintLn(length);
+    debugPrintLn("* having received packet");
     this->packetReceived = true;
     length = receive(payload, sizeof(payload));
-    debugprintLn(reinterpret_cast<char*>(payload));
-    debugprint("Length: ");
-    debugprintLn(length);
+    debugPrintLn(reinterpret_cast<char*>(payload));
+    debugPrint("Length: ");
+    debugPrintLn(length);
 
     // onMacRX
-    debugprintLn("");
-    debugprintLn("==== onMacRX");
+    debugPrintLn("");
+    debugPrintLn("==== onMacRX");
     char mockRx[] = "mac_rx 1 303132333435363738";
     memcpy(this->inputBuffer, mockRx, strlen(mockRx) + 1);
     this->packetReceived = false;// reset
-    debugprint("Input buffer now is: ");
-    debugprintLn(this->inputBuffer);
-    debugprint("onMacRX result code: ");
-    debugprintLn(onMacRX());
+    debugPrint("Input buffer now is: ");
+    debugPrintLn(this->inputBuffer);
+    debugPrint("onMacRX result code: ");
+    debugPrintLn(onMacRX());
     uint8_t payload2[64];
     if (receive(payload2, sizeof(payload2)) != 9) {
-        debugprintLn("len is wrong!");
+        debugPrintLn("len is wrong!");
     }
-    debugprintLn(reinterpret_cast<char*>(payload2));
+    debugPrintLn(reinterpret_cast<char*>(payload2));
     if (receive(payload2, sizeof(payload2), 2) != 7) {
-        debugprintLn("len is wrong!");
+        debugPrintLn("len is wrong!");
     }
-    debugprintLn(reinterpret_cast<char*>(payload2));
+    debugPrintLn(reinterpret_cast<char*>(payload2));
     if (receive(payload2, sizeof(payload2), 3) != 6) {
-        debugprintLn("len is wrong!");
+        debugPrintLn("len is wrong!");
     }
-    debugprintLn(reinterpret_cast<char*>(payload2));
+    debugPrintLn(reinterpret_cast<char*>(payload2));
 
-    debugprint("free ram: ");
-    debugprintLn(freeRam());
+    debugPrint("free ram: ");
+    debugPrintLn(freeRam());
 
     // lookup error
-    debugprintLn("");
-    debugprintLn("");
+    debugPrintLn("");
+    debugPrintLn("");
 
-    debugprint("empty string: ");
-    debugprintLn((lookupMacTransmitError("") == NoResponse) ? "passed" : "wrong");
+    debugPrint("empty string: ");
+    debugPrintLn((lookupMacTransmitError("") == NoResponse) ? "passed" : "wrong");
 
-    debugprint("\"random\": ");
-    debugprintLn((lookupMacTransmitError("random") == NoResponse) ? "passed" : "wrong");
+    debugPrint("\"random\": ");
+    debugPrintLn((lookupMacTransmitError("random") == NoResponse) ? "passed" : "wrong");
 
-    debugprint("\"invalid_param\": ");
-    debugprintLn((lookupMacTransmitError("invalid_param") == InternalError) ? "passed" : "wrong");
+    debugPrint("\"invalid_param\": ");
+    debugPrintLn((lookupMacTransmitError("invalid_param") == InternalError) ? "passed" : "wrong");
 
-    debugprint("\"not_joined\": ");
-    debugprintLn((lookupMacTransmitError("not_joined") == NotConnected) ? "passed" : "wrong");
+    debugPrint("\"not_joined\": ");
+    debugPrintLn((lookupMacTransmitError("not_joined") == NotConnected) ? "passed" : "wrong");
 
-    debugprint("\"busy\": ");
-    debugprintLn((lookupMacTransmitError("busy") == Busy) ? "passed" : "wrong");
+    debugPrint("\"busy\": ");
+    debugPrintLn((lookupMacTransmitError("busy") == Busy) ? "passed" : "wrong");
 
-    debugprint("\"invalid_param\": ");
-    debugprintLn((lookupMacTransmitError("invalid_param") == InternalError) ? "passed" : "wrong");
+    debugPrint("\"invalid_param\": ");
+    debugPrintLn((lookupMacTransmitError("invalid_param") == InternalError) ? "passed" : "wrong");
 
-    debugprint("free ram: ");
-    debugprintLn(freeRam());
+    debugPrint("free ram: ");
+    debugPrintLn(freeRam());
 #endif
 }
