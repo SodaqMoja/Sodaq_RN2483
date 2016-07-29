@@ -65,4 +65,17 @@
 #define STR_CMD_GET_HWEUI "sys get hweui"
 #define STR_CMD_SET_CHANNEL_STATUS "mac set ch status "
 
+#define STR_SYS_SET "sys set "
+#define STR_SYS_GET "sys get "
+#define STR_SYS_VDD "vdd"
+
+#define STR_GPIO_MODE "pinmode "
+#define STR_GPIO_MODE_DIGIN " digin"
+#define STR_GPIO_MODE_DIGOUT " digout"
+#define STR_GPIO_MODE_ANA " ana"
+
+#define STR_GPIO_DIG "pindig "
+#define STR_GPIO_ANA "pinana "
+#define STR_GPIO "GPIO"
+
 #endif

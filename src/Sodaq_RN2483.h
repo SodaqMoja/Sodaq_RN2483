@@ -55,8 +55,10 @@
 #if defined(ARDUINO_ARCH_AVR)
 typedef HardwareSerial SerialType;
 #define ENABLE_SLEEP
-#elif defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_SAMD)
+#elif  defined(ARDUINO_ARCH_SAMD)
 typedef Uart SerialType;
+#elif defined(ARDUINO_ARCH_SAM) // due and sam3x derivatives use "UARTClass" instead of "Uart"
+typedef UARTClass SerialType;
 #define ENABLE_SLEEP
 #else
 typedef Stream SerialType;
@@ -74,6 +76,14 @@ enum MacTransmitErrorCodes
     NetworkFatalError = 6,
     NotConnected = 7,
     NoAcknowledgment = 8,
+};
+
+// Available error codes.
+enum pinModes
+{
+	digitalIn = 0,
+	digitalOut = 1,
+	analog = 2,
 };
 
 // Provides a simple, abstracted interface to Microchip's RN2483 LoRaWAN module.
@@ -117,6 +127,27 @@ public:
     // Gets the preprogrammed EUI node address from the module.
     // Returns the number of bytes written or 0 in case of error.
     uint8_t getHWEUI(uint8_t* buffer, uint8_t size);
+
+// GPIO interface
+	// Sets the mode of a GPIO
+	// Returns true on successful setup.
+	uint8_t pinMode(uint8_t gpio , pinModes mode);
+
+	// Gets the digital state of a pin
+	// Returns the state of a GPIO ( true or false )
+	uint8_t digitalRead(uint8_t gpio );
+
+	// Sets the digital state of a pin
+	// Returns true on successful setting.
+	uint8_t digitalWrite(uint8_t gpio, uint8_t state);
+
+	// Gets the analog value of a pin
+	// Returns the ADC reading ( 0-1023 )
+	uint16_t analogRead(uint8_t gpio);
+
+	// Gets the supply voltage
+	// Returns the Voltage in mV reading ( 0-3600 )
+	uint16_t readVdd();
 
 #ifdef ENABLE_SLEEP
     void wakeUp();
