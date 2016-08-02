@@ -95,6 +95,30 @@ bool Sodaq_RN2483::initOTA(SerialType& stream, const uint8_t devEUI[8], const ui
         joinNetwork(STR_OTAA);
 }
 
+// Initializes the device and connects to the network using Over-The-Air Activation.
+// Uses HWEUI
+// Returns true on successful connection.
+bool Sodaq_RN2483::initOTA(SerialType& stream, const uint8_t appEUI[8], const uint8_t appKey[16], bool adr)
+{
+	uint8_t devEUI[8];
+	debugPrintLn("[initOTA]: using hweui");
+	// assign Serial port
+	init(stream);
+
+	if (resetDevice()) {
+		getHWEUI(devEUI, 8); // returns ASCII HWEUI from RN module
+
+		return resetDevice() &&
+			setMacParam(STR_DEV_EUI, devEUI, 8) &&
+			setMacParam(STR_APP_EUI, appEUI, 8) &&
+			setMacParam(STR_APP_KEY, appKey, 16) &&
+			setMacParam(STR_ADR, BOOL_TO_ONOFF(adr)) &&
+			joinNetwork(STR_OTAA);
+	}
+	return 0; // reset command failed
+	
+}
+
 // Initializes the device and connects to the network using Activation By Personalization.
 // Returns true on successful connection.
 bool Sodaq_RN2483::initABP(SerialType& stream, const uint8_t devAddr[4], const uint8_t appSKey[16], const uint8_t nwkSKey[16], bool adr)
