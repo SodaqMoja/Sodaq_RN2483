@@ -95,6 +95,30 @@ bool Sodaq_RN2483::initOTA(SerialType& stream, const uint8_t devEUI[8], const ui
         joinNetwork(STR_OTAA);
 }
 
+// Initializes the device and connects to the network using Over-The-Air Activation.
+// Uses HWEUI
+// Returns true on successful connection.
+bool Sodaq_RN2483::initOTA(SerialType& stream, const uint8_t appEUI[8], const uint8_t appKey[16], bool adr)
+{
+	uint8_t devEUI[8];
+	debugPrintLn("[initOTA]: using hweui");
+	// assign Serial port
+	init(stream);
+
+	if (resetDevice()) {
+		getHWEUI(devEUI, 8); // returns ASCII HWEUI from RN module
+
+		return resetDevice() &&
+			setMacParam(STR_DEV_EUI, devEUI, 8) &&
+			setMacParam(STR_APP_EUI, appEUI, 8) &&
+			setMacParam(STR_APP_KEY, appKey, 16) &&
+			setMacParam(STR_ADR, BOOL_TO_ONOFF(adr)) &&
+			joinNetwork(STR_OTAA);
+	}
+	return 0; // reset command failed
+	
+}
+
 // Initializes the device and connects to the network using Activation By Personalization.
 // Returns true on successful connection.
 bool Sodaq_RN2483::initABP(SerialType& stream, const uint8_t devAddr[4], const uint8_t appSKey[16], const uint8_t nwkSKey[16], bool adr)
@@ -216,6 +240,137 @@ uint8_t Sodaq_RN2483::getHWEUI(uint8_t* buffer, uint8_t size)
 
     debugPrint("[getHWEUI] Timed out without a response!");
     return 0;
+}
+
+// GPIO interface
+// Sets the mode of a GPIO ( digital in= 0, digital out = 1, analog = 2 )
+// Returns true on successful setup.
+uint8_t Sodaq_RN2483::pinMode(uint8_t gpio, pinModes mode) {
+	//sanitize inputs,
+	//GPIO4 does not do analog
+	debugPrintLn("setting GPIO pin");
+	if (mode == analog) {
+		if (gpio==4) {
+			return false;
+			debugPrintLn("GPIO4 does not support analog");
+		}
+	}
+	// only handle GPIO0-13
+	if (gpio >13) {
+		return false;
+		debugPrintLn("GPIO out of bounds : 0-13 only");
+	}
+	// sys set pinmode <pinname> <pinFunc>
+	this->loraStream->print(STR_SYS_SET);
+	this->loraStream->print(STR_GPIO_MODE);
+	this->loraStream->print(STR_GPIO);
+	this->loraStream->print(gpio);
+	if (mode == digitalIn) {
+		this->loraStream->print(STR_GPIO_MODE_DIGIN);
+	}
+	else if (mode == digitalOut){
+		this->loraStream->print(STR_GPIO_MODE_DIGOUT);
+	}
+	else {
+		this->loraStream->print(STR_GPIO_MODE_ANA);
+	}
+	this->loraStream->print(CRLF);
+
+	// parse response
+	return expectOK();
+}
+
+// Gets the digital state of a pin
+// Returns the state of a GPIO ( true or false ), returns false if pin not set up
+uint8_t Sodaq_RN2483::digitalRead(uint8_t gpio) {
+	//sanitize inputs,
+	// only handle GPIO0-13
+	debugPrintLn("digitalRead");
+	if (gpio >13) {
+		return false;
+		debugPrintLn("GPIO out of bounds : 0-13 only");
+	}
+	// sys get pindig <pinname>
+	this->loraStream->print(STR_SYS_GET);
+	this->loraStream->print(STR_GPIO_DIG);
+	this->loraStream->print(STR_GPIO);
+	this->loraStream->print(gpio);
+	this->loraStream->print(CRLF);
+
+	// parse response 
+	// "1" means pin is High, so return true
+	// will return false / 0 otherwise
+	return expectString("1"); 
+
+}
+
+// Sets the digital state of a pin
+// Returns true on successful setting.
+uint8_t Sodaq_RN2483::digitalWrite(uint8_t gpio, uint8_t state) {
+	//sanitize inputs,
+	// only handle GPIO0-13
+	debugPrintLn("digitalWrite");
+	if (gpio >13) {
+		return false;
+		debugPrintLn("GPIO out of bounds : 0-13 only");
+	}
+	// sys set pindig <pinname> <pinstate>
+	// example: sys set pindig GPIO5 1
+	this->loraStream->print(STR_SYS_SET);
+	this->loraStream->print(STR_GPIO_DIG);
+	this->loraStream->print(STR_GPIO);
+	this->loraStream->print(gpio);
+	this->loraStream->print(" ");
+	this->loraStream->print(state);
+	this->loraStream->print(CRLF);
+
+	// parse response 
+	return expectOK();
+}
+
+// Gets the analog value of a pin
+// Returns the ADC reading ( 0-1023 )
+uint16_t Sodaq_RN2483::analogRead(uint8_t gpio) {
+	uint16_t analogReading = 0;
+	//sanitize inputs,
+	// only handle GPIO0-13, but not 4
+	debugPrintLn("analogRead");
+	if (gpio >13 && gpio != 4) {
+		return 0;
+		debugPrintLn("GPIO out of bounds : 0-13 only, and not 4");
+	}
+	// sys get pinana <pinname>
+	// example : sys get pinana GPIO0
+	this->loraStream->print(STR_SYS_GET);
+	this->loraStream->print(STR_GPIO_ANA);
+	this->loraStream->print(STR_GPIO);
+	this->loraStream->print(gpio);
+	this->loraStream->print(CRLF);
+
+	// parse response 
+	// "1" means pin is High, so return true
+	// will return false otherwise
+	analogReading =	this->loraStream->parseInt();
+	return analogReading;
+}
+
+// Gets the supply voltage
+// Returns the Voltage in mV reading ( 0-3600 )
+uint16_t Sodaq_RN2483::readVdd() {
+	uint16_t analogReading = 0;
+	//sanitize inputs,
+	// only handle GPIO0-13, but not 4
+	debugPrintLn("readVdd");
+	// example : sys get vdd
+	this->loraStream->print(STR_SYS_GET);
+	this->loraStream->print(STR_SYS_VDD);
+	this->loraStream->print(CRLF);
+
+	// parse response 
+	// "1" means pin is High, so return true
+	// will return false otherwise
+	analogReading = this->loraStream->parseInt();
+	return analogReading;
 }
 
 #ifdef ENABLE_SLEEP
