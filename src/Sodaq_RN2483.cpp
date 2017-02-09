@@ -202,7 +202,7 @@ uint8_t Sodaq_RN2483::getHWEUI(uint8_t* buffer, uint8_t size)
         if (readLn() > 0) {
             debugPrintLn(this->inputBuffer);
             while (outputIndex < size
-                && inputIndex + 1 < this->inputBufferSize
+                && inputIndex + 1u < this->inputBufferSize
                 && this->inputBuffer[inputIndex] != 0
                 && this->inputBuffer[inputIndex + 1] != 0) {
                 buffer[outputIndex] = HEX_PAIR_TO_BYTE(
