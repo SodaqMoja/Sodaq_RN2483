@@ -195,7 +195,7 @@ uint8_t Sodaq_RN2483::getHWEUI(uint8_t* buffer, uint8_t size)
     uint8_t outputIndex = 0;
 
     unsigned long start = millis();
-    while (millis() < start + DEFAULT_TIMEOUT) {
+    while (millis() - start < DEFAULT_TIMEOUT) {
         sodaq_wdt_reset();
         debugPrint(".");
 
@@ -270,7 +270,7 @@ bool Sodaq_RN2483::expectString(const char* str, uint16_t timeout)
     debugPrint("[expectString] expecting "); debugPrint(str);
 
     unsigned long start = millis();
-    while (millis() < start + timeout) {
+    while (millis() - start < timeout) {
         sodaq_wdt_reset();
         debugPrint(".");
 
@@ -585,8 +585,8 @@ uint8_t Sodaq_RN2483::macTransmit(const char* type, uint8_t port, const uint8_t*
     this->packetReceived = false; // prepare for receiving a new packet
 
     debugPrint("Waiting for server response");
-    unsigned long timeout = millis() + RECEIVE_TIMEOUT; // hard timeout
-    while (millis() < timeout) {
+    unsigned long start = millis();
+    while (millis() - start < DEFAULT_TIMEOUT) {
         sodaq_wdt_reset();
         debugPrint(".");
         if (readLn() > 0) {
