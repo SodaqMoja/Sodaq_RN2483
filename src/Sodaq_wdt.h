@@ -42,6 +42,11 @@ enum wdt_period : uint8_t
   WDT_PERIOD_2X     = 8,   // 2048 cycles = 2s
   WDT_PERIOD_4X     = 9,   // 4096 cycles = 4s
   WDT_PERIOD_8X     = 10   // 8192 cycles = 8s
+
+#else
+	
+  // All other platforms
+  WDT_PERIOD_1X     = 0		// dummy declaration
   
 #endif
 };
