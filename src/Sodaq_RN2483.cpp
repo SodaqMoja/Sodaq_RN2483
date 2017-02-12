@@ -586,7 +586,7 @@ uint8_t Sodaq_RN2483::macTransmit(const char* type, uint8_t port, const uint8_t*
 
     debugPrint("Waiting for server response");
     unsigned long start = millis();
-    while (millis() - start < DEFAULT_TIMEOUT) {
+    while (millis() - start < RECEIVE_TIMEOUT) {
         sodaq_wdt_reset();
         debugPrint(".");
         if (readLn() > 0) {
