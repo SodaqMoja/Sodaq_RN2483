@@ -304,6 +304,8 @@ bool Sodaq_RN2483::resetDevice()
 
     this->loraStream->print(STR_CMD_RESET);
     this->loraStream->print(CRLF);
+    
+    expectOK();
 
     if (expectString(STR_DEVICE_TYPE_RN)) {
         if (strstr(this->inputBuffer, STR_DEVICE_TYPE_RN2483) != NULL) {
