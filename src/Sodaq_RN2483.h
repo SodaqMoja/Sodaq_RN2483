@@ -107,6 +107,9 @@ public:
 
     // Sets the optional "Diagnostics and Debug" stream.
     void setDiag(Stream& stream) { diagStream = &stream; };
+    
+    // Send chip to sleep for n msec
+    void sleep(uint32_t msec);
 
     // Performs a hardware reset (using the reset pin -if available).
     void hardwareReset();
