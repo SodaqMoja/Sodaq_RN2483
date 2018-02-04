@@ -857,6 +857,11 @@ uint8_t Sodaq_RN2483::onMacRX()
     // payload
     token = strtok(NULL, " "); // until end of string
 
+    if (!token) {
+        debugPrintLn("[onMacRX]: packet contains no payload.");
+        return NoError;
+    }
+    
     uint16_t len = strlen(token) + 1; // include termination char
     uint16_t start = (token - _inputBuffer);
     uint16_t inputIndex = start;
