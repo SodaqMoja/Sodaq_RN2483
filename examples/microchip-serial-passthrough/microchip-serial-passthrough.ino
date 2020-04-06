@@ -44,56 +44,60 @@
 
 const uint8_t devAddr[4] =
 {
-	0x00, 0x1A, 0x62, 0xAE
+    0x00, 0x1A, 0x62, 0xAE
 };
 
 // USE YOUR OWN KEYS!
 const uint8_t appSKey[16] =
 {
-	0x0D, 0x0E, 0x0A, 0x0D,
-	0x0B, 0x0E, 0x0E, 0x0F,
-	0x0C, 0x0A, 0x0F, 0x0E,
-	0x0B, 0x0A, 0x0B, 0x0E,
+    0x0D, 0x0E, 0x0A, 0x0D,
+    0x0B, 0x0E, 0x0E, 0x0F,
+    0x0C, 0x0A, 0x0F, 0x0E,
+    0x0B, 0x0A, 0x0B, 0x0E,
 };
 
 // USE YOUR OWN KEYS!
 const uint8_t nwkSKey[16] =
 {
-	0x0D, 0x0E, 0x0A, 0x0D,
-	0x0B, 0x0E, 0x0E, 0x0F,
-	0x0C, 0x0A, 0x0F, 0x0E,
-	0x0B, 0x0A, 0x0B, 0x0E,
+    0x0D, 0x0E, 0x0A, 0x0D,
+    0x0B, 0x0E, 0x0E, 0x0F,
+    0x0C, 0x0A, 0x0F, 0x0E,
+    0x0B, 0x0A, 0x0B, 0x0E,
 };
 
 void setup()
 {
-	#ifdef beePin
-		digitalWrite(beePin, HIGH);
-		pinMode(beePin, OUTPUT);
-	#endif
+    debugSerial.begin(57600);
 
-	debugSerial.begin(57600);
-	loraSerial.begin(LoRaBee.getDefaultBaudRate());
+    while ((!debugSerial) && (millis() < 10000)) {
+        // wait 10 seconds for serial monitor
+    }
 
-	if (LoRaBee.initABP(loraSerial, devAddr, appSKey, nwkSKey, true))
-	{
-		debugSerial.println("Connection to the network was successful.");
-	}
-	else
-	{
-		debugSerial.println("Connection to the network failed!");
-	}
+#ifdef beePin
+    digitalWrite(beePin, HIGH);
+    pinMode(beePin, OUTPUT);
+    delay(500);
+#endif
+
+    loraSerial.begin(LoRaBee.getDefaultBaudRate());
+
+    if (LoRaBee.initABP(loraSerial, devAddr, appSKey, nwkSKey, true)) {
+        debugSerial.println("Connection to the network was successful.");
+    }
+    else {
+        debugSerial.println("Connection to the network failed!");
+    }
 }
 
 void loop()
 {
-  while (debugSerial.available()) 
-  {
-    loraSerial.write((char)debugSerial.read());
-  }
+    while (debugSerial.available()) 
+    {
+        loraSerial.write((char)debugSerial.read());
+    }
 
-  while (loraSerial.available()) 
-  {
-    debugSerial.write((char)loraSerial.read());
-  }
+    while (loraSerial.available()) 
+    {
+        debugSerial.write((char)loraSerial.read());
+    }
 }
