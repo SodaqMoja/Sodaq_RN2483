@@ -5,38 +5,38 @@
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
-Sodaq_RN2483			KEYWORD1
+Sodaq_RN2483	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 
-getDefaultBaudRate		KEYWORD2
-initOTA				KEYWORD2
-initABP				KEYWORD2
-setDiag				KEYWORD2
-send				KEYWORD2
-sendReqAck			KEYWORD2
-receive 			KEYWORD2
-setInputBufferSize 		KEYWORD2
-setReceivedPayloadBufferSize 	KEYWORD2
+getDefaultBaudRate	KEYWORD2
+initOTA	KEYWORD2
+initABP	KEYWORD2
+setDiag	KEYWORD2
+send	KEYWORD2
+sendReqAck	KEYWORD2
+receive	KEYWORD2
+setInputBufferSize	KEYWORD2
+setReceivedPayloadBufferSize	KEYWORD2
 
 #######################################
 # Instances (KEYWORD3)
 #######################################
 
-LoRaBee				KEYWORD3
+LoRaBee	KEYWORD3
 
 #######################################
 # Constants (LITERAL1)
 #######################################
 
-NoError 			LITERAL1
-NoResponse			LITERAL1
-Timeout				LITERAL1
-TransmissionFailure		LITERAL1
-InternalError			LITERAL1
-Busy				LITERAL1
-NetworkFatalError		LITERAL1
-NotConnected			LITERAL1
-NoAcknowledgment		LITERAL1
+NoError	LITERAL1
+NoResponse	LITERAL1
+Timeout	LITERAL1
+TransmissionFailure	LITERAL1
+InternalError	LITERAL1
+Busy	LITERAL1
+NetworkFatalError	LITERAL1
+NotConnected	LITERAL1
+NoAcknowledgment	LITERAL1

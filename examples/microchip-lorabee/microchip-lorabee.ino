@@ -20,7 +20,7 @@
 
 #include <Sodaq_RN2483.h>
 
-#if defined(ARDUINO_SODAQ_MBILI) || defined(ARDUINO_SODAQ_TATU)
+#if defined(ARDUINO_AVR_SODAQ_MBILI) || defined(ARDUINO_AVR_SODAQ_TATU)
 // MBili
 #define debugSerial Serial
 #define loraSerial Serial1
@@ -30,112 +30,129 @@
 #define debugSerial SerialUSB
 #define loraSerial Serial1
 #define beePin BEE_VCC
+#elif defined(ARDUINO_SODAQ_ONE) || defined(ARDUINO_SODAQ_ONE_BETA)
+// Sodaq One
+#define debugSerial SerialUSB
+#define loraSerial Serial1
+#elif defined(ARDUINO_SODAQ_EXPLORER)
+#define debugSerial SerialUSB
+#define loraSerial Serial2
 #else
 #error "Please select Autonomo, Mbili, or Tatu"
 #endif
 
 const uint8_t devAddr[4] =
 {
-	0x00, 0x1A, 0x62, 0xAE
+    0x00, 0x1A, 0x62, 0xAE
 };
 
 // USE YOUR OWN KEYS!
 const uint8_t appSKey[16] =
 {
-	0x0D, 0x0E, 0x0A, 0x0D,
-	0x0B, 0x0E, 0x0E, 0x0F,
-	0x0C, 0x0A, 0x0F, 0x0E,
-	0x0B, 0x0A, 0x0B, 0x0E,
+    0x0D, 0x0E, 0x0A, 0x0D,
+    0x0B, 0x0E, 0x0E, 0x0F,
+    0x0C, 0x0A, 0x0F, 0x0E,
+    0x0B, 0x0A, 0x0B, 0x0E,
 };
 
 // USE YOUR OWN KEYS!
 const uint8_t nwkSKey[16] =
 {
-	0x0D, 0x0E, 0x0A, 0x0D,
-	0x0B, 0x0E, 0x0E, 0x0F,
-	0x0C, 0x0A, 0x0F, 0x0E,
-	0x0B, 0x0A, 0x0B, 0x0E,
+    0x0D, 0x0E, 0x0A, 0x0D,
+    0x0B, 0x0E, 0x0E, 0x0F,
+    0x0C, 0x0A, 0x0F, 0x0E,
+    0x0B, 0x0A, 0x0B, 0x0E,
 };
 
 uint8_t testPayload[] =
 {
-	0x30, 0x31, 0xFF, 0xDE, 0xAD
+    0x30, 0x31, 0xFF, 0xDE, 0xAD
 };
 
 void setup()
 {
-	debugSerial.begin(57600);
-	loraSerial.begin(LoRaBee.getDefaultBaudRate());
+    debugSerial.begin(57600);
 
-	digitalWrite(beePin, HIGH);
-	pinMode(beePin, OUTPUT);
+    while ((!debugSerial) && (millis() < 10000)) {
+        // wait 10 seconds for serial monitor
+    }
 
-	LoRaBee.setDiag(debugSerial); // optional
-	if (LoRaBee.initABP(loraSerial, devAddr, appSKey, nwkSKey, true))
-	{
-		debugSerial.println("Connection to the network was successful.");
-	}
-	else
-	{
-		debugSerial.println("Connection to the network failed!");
-	}
+#ifdef beePin
+    digitalWrite(beePin, HIGH);
+    pinMode(beePin, OUTPUT);
+    delay(500);
+#endif
+
+    loraSerial.begin(LoRaBee.getDefaultBaudRate());
+
+    LoRaBee.setDiag(debugSerial); // optional
+    if (LoRaBee.initABP(loraSerial, devAddr, appSKey, nwkSKey, true)) {
+        debugSerial.println("Connection to the network was successful.");
+    }
+    else {
+        debugSerial.println("Connection to the network failed!");
+    }
 }
 
 void loop()
 {
-	debugSerial.println("Sleeping for 5 seconds before starting sending out test packets.");
-	for (uint8_t i = 5; i > 0; i--)
-	{
-		debugSerial.println(i);
-		delay(1000);
-	}
+    debugSerial.println("Sleeping for 5 seconds before starting sending out test packets.");
+    for (uint8_t i = 5; i > 0; i--) {
+        debugSerial.println(i);
+        delay(1000);
+    }
 
-	// send 10 packets, with at least a 5 seconds delay after each transmission (more seconds if the device is busy)
-	uint8_t i = 10;
-	while (i > 0)
-	{
-		testPayload[0] = i; // change first byte
+    // send 10 packets, with at least a 5 seconds delay after each transmission (more seconds if the device is busy)
+    uint8_t i = 10;
+    while (i > 0) {
+        testPayload[0] = i; // change first byte
 
-		switch (LoRaBee.sendReqAck(1, testPayload, 5, 3))
-		{
-		case NoError:
-			debugSerial.println("Successful transmission.");
-			i--;
-			break;
-		case NoResponse:
-			debugSerial.println("There was no response from the device.");
-			break;
-		case Timeout:
-			debugSerial.println("Connection timed-out. Check your serial connection to the device! Sleeping for 20sec.");
-			delay(20000);
-			break;
-		case PayloadSizeError:
-			debugSerial.println("The size of the payload is greater than allowed. Transmission failed!");
-			break;
-		case InternalError:
-			debugSerial.println("Oh No! This shouldn't happen. Something is really wrong! Try restarting the device!\r\nThe program will now halt.");
-			while (1) {};
-			break;
-		case Busy:
-			debugSerial.println("The device is busy. Sleeping for 10 extra seconds.");
-			delay(10000);
-			break;
-		case NetworkFatalError:
-			debugSerial.println("There is a non-recoverable error with the network connection. You should re-connect.\r\nThe program will now halt.");
-			while (1) {};
-			break;
-		case NotConnected:
-			debugSerial.println("The device is not connected to the network. Please connect to the network before attempting to send data.\r\nThe program will now halt.");
-			while (1) {};
-			break;
-		case NoAcknowledgment:
-			debugSerial.println("There was no acknowledgment sent back!");
-			break;
-		default:
-			break;
-		}
-		delay(5000);
-	}
+        // Use the next line to send with acknowledgment and a maximum of 3 retries.
+        // switch (LoRaBee.sendReqAck(1, testPayload, 5, 3)) {
 
-	while (1) { } // block forever
+        // Use the next line to send without acknowledgment.
+        switch (LoRaBee.send(1, testPayload, 5)) {
+
+            case NoError:
+                debugSerial.println("Successful transmission.");
+                i--;
+                break;
+            case NoResponse:
+                debugSerial.println("There was no response from the device.");
+                break;
+            case Timeout:
+                debugSerial.println("Connection timed-out. Check your serial connection to the device! Sleeping for 20sec.");
+                delay(20000);
+                break;
+            case PayloadSizeError:
+                debugSerial.println("The size of the payload is greater than allowed. Transmission failed!");
+                break;
+            case InternalError:
+                debugSerial.println("Oh No! This shouldn't happen. Something is really wrong! Try restarting the device!\r\nThe program will now halt.");
+                while (1) {};
+                break;
+            case Busy:
+                debugSerial.println("The device is busy. Sleeping for 10 extra seconds.");
+                delay(10000);
+                break;
+            case NetworkFatalError:
+                debugSerial.println("There is a non-recoverable error with the network connection. You should re-connect.\r\nThe program will now halt.");
+                while (1) {};
+                break;
+            case NotConnected:
+                debugSerial.println("The device is not connected to the network. Please connect to the network before attempting to send data.\r\nThe program will now halt.");
+                while (1) {};
+                break;
+            case NoAcknowledgment:
+                debugSerial.println("There was no acknowledgment sent back!");
+                break;
+            default:
+                break;
+        }
+
+        // A minimum of 60 seconds delay is recommended to prevent dutycycle issues.
+        delay(60 * 1000);
+    }
+
+    while (1) { } // block forever
 }

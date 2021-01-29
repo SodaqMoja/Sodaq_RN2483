@@ -20,59 +20,84 @@
 
 #include <Sodaq_RN2483.h>
 
+#if defined(ARDUINO_AVR_SODAQ_MBILI) || defined(ARDUINO_AVR_SODAQ_TATU)
 // MBili
 #define debugSerial Serial
-// Autonomo
-//#define debugSerial SerialUSB
 #define loraSerial Serial1
+#define beePin 20
+#elif defined(ARDUINO_SODAQ_AUTONOMO)
+// Autonomo
+#define debugSerial SerialUSB
+#define loraSerial Serial1
+#define beePin BEE_VCC
+#elif defined(ARDUINO_SODAQ_ONE) || defined(ARDUINO_SODAQ_ONE_BETA)
+// Sodaq One
+#define debugSerial SerialUSB
+#define loraSerial Serial1
+#elif defined(ARDUINO_SODAQ_EXPLORER)
+#define debugSerial SerialUSB
+#define loraSerial Serial2
+#else
+#error "Please select Autonomo, Mbili, or Tatu"
+#endif
+
 
 const uint8_t devAddr[4] =
 {
-	0x00, 0x1A, 0x62, 0xAE
+    0x00, 0x1A, 0x62, 0xAE
 };
 
 // USE YOUR OWN KEYS!
 const uint8_t appSKey[16] =
 {
-	0x0D, 0x0E, 0x0A, 0x0D,
-	0x0B, 0x0E, 0x0E, 0x0F,
-	0x0C, 0x0A, 0x0F, 0x0E,
-	0x0B, 0x0A, 0x0B, 0x0E,
+    0x0D, 0x0E, 0x0A, 0x0D,
+    0x0B, 0x0E, 0x0E, 0x0F,
+    0x0C, 0x0A, 0x0F, 0x0E,
+    0x0B, 0x0A, 0x0B, 0x0E,
 };
 
 // USE YOUR OWN KEYS!
 const uint8_t nwkSKey[16] =
 {
-	0x0D, 0x0E, 0x0A, 0x0D,
-	0x0B, 0x0E, 0x0E, 0x0F,
-	0x0C, 0x0A, 0x0F, 0x0E,
-	0x0B, 0x0A, 0x0B, 0x0E,
+    0x0D, 0x0E, 0x0A, 0x0D,
+    0x0B, 0x0E, 0x0E, 0x0F,
+    0x0C, 0x0A, 0x0F, 0x0E,
+    0x0B, 0x0A, 0x0B, 0x0E,
 };
 
 void setup()
 {
-	debugSerial.begin(57600);
-	loraSerial.begin(LoRaBee.getDefaultBaudRate());
+    debugSerial.begin(57600);
 
-	if (LoRaBee.initABP(loraSerial, devAddr, appSKey, nwkSKey, true))
-	{
-		debugSerial.println("Connection to the network was successful.");
-	}
-	else
-	{
-		debugSerial.println("Connection to the network failed!");
-	}
+    while ((!debugSerial) && (millis() < 10000)) {
+        // wait 10 seconds for serial monitor
+    }
+
+#ifdef beePin
+    digitalWrite(beePin, HIGH);
+    pinMode(beePin, OUTPUT);
+    delay(500);
+#endif
+
+    loraSerial.begin(LoRaBee.getDefaultBaudRate());
+
+    if (LoRaBee.initABP(loraSerial, devAddr, appSKey, nwkSKey, true)) {
+        debugSerial.println("Connection to the network was successful.");
+    }
+    else {
+        debugSerial.println("Connection to the network failed!");
+    }
 }
 
 void loop()
 {
-  while (debugSerial.available()) 
-  {
-    loraSerial.write((char)debugSerial.read());
-  }
+    while (debugSerial.available()) 
+    {
+        loraSerial.write((char)debugSerial.read());
+    }
 
-  while (loraSerial.available()) 
-  {
-    debugSerial.write((char)loraSerial.read());
-  }
+    while (loraSerial.available()) 
+    {
+        debugSerial.write((char)loraSerial.read());
+    }
 }
