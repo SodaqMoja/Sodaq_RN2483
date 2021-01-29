@@ -15,7 +15,6 @@ jobs:
         python-version: [3.7]
         example:
           - "examples/microchip-lorabee"
-          - "examples/microchip-save-restore"
           - "examples/microchip-serial-passthrough"
     runs-on: ${{ matrix.os }}
     steps:
