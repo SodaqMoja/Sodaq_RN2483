@@ -1,7 +1,8 @@
+[![CI](https://github.com/SodaqMoja/Sodaq_RN2483/workflows/CI/badge.svg)](https://github.com/SodaqMoja/Sodaq_RN2483/actions?query=workflow%3ACI)
+
 # Sodaq_RN2483
 
 Arduino library for using the Microchip RN2483 LoRaWAN module (Class A).
-
 
 ## Usage
 
